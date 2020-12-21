@@ -1,7 +1,7 @@
 import io
 import os
 from contextlib import redirect_stdout
-from typing import List, Optional
+from typing import List, Optional, Type
 
 import entrypoints
 from fastapi import APIRouter
@@ -16,7 +16,7 @@ from aopi_index_builder.context import PackageContext, get_base_ctx, init_packag
 class PackageIndex(BaseModel):
     prefix: str
     router: APIRouter
-    models: List[Model] = []
+    models: List[Type[Model]] = []
     help: Optional[str] = None
     template_loader: Optional[BaseLoader] = None
 

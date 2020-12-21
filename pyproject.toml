@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.17"
+version = "0.1.18"
 name = "aopi_index_builder"
 authors = ["Pavel Kirilin <win10@list.ru>"]
 maintainers = ["Pavel Kirilin <win10@list.ru>"]
@@ -23,3 +23,7 @@ SQLAlchemy = "^1.3.22"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
 pre-commit = "^2.9.3"
+
+[[tool.poetry.source]]
+name = "aopi"
+url = "http://localhost:8080/simple"

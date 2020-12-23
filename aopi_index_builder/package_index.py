@@ -14,7 +14,6 @@ from aopi_index_builder.context import PackageContext, get_base_ctx, init_packag
 
 
 class PackageIndex(BaseModel):
-    prefix: str
     router: APIRouter
     models: List[Type[Model]] = []
     help: Optional[str] = None
@@ -41,7 +40,7 @@ def load_plugins() -> List[PluginInfo]:
         if not plugin_package_dir.exists():
             os.makedirs(plugin_package_dir)
         init_package_ctx(
-            PackageContext(prefix=plugin_name, packages_dir=plugin_package_dir)
+            PackageContext(prefix=f"/{plugin_name}", packages_dir=plugin_package_dir)
         )
         logger.debug(f"Loading {plugin_name}")
         buffer = io.StringIO()
@@ -53,6 +52,8 @@ def load_plugins() -> List[PluginInfo]:
                     logger.error("Plugin has returned wrong type.")
                     logger.debug(f"Expected: PackageIndex. Actual: {index.__class__}")
                     continue
+                for model in index.models:
+                    model.__tablename__ = f"{plugin_name}_{model.__tablename__}"
                 indices.append(
                     PluginInfo(
                         plugin_name=plugin_name,

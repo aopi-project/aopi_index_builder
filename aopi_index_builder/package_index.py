@@ -5,7 +5,6 @@ from typing import List, Optional, Type
 
 import entrypoints
 from fastapi import APIRouter
-from jinja2 import BaseLoader
 from loguru import logger
 from orm import Model
 from pydantic import BaseConfig, BaseModel
@@ -17,7 +16,6 @@ class PackageIndex(BaseModel):
     router: APIRouter
     models: List[Type[Model]] = []
     help: Optional[str] = None
-    template_loader: Optional[BaseLoader] = None
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True

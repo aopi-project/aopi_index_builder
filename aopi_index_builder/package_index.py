@@ -22,6 +22,7 @@ class PackageIndex(BaseModel):
 
 
 class PluginInfo(BaseModel):
+    prefix: str
     plugin_name: str
     package_name: str
     package_version: str
@@ -37,8 +38,9 @@ def load_plugins() -> List[PluginInfo]:
         plugin_package_dir = base_ctx.main_dir.joinpath(plugin_name)
         if not plugin_package_dir.exists():
             os.makedirs(plugin_package_dir)
+        plugin_prefix = f"/{plugin_name}"
         init_package_ctx(
-            PackageContext(prefix=f"/{plugin_name}", packages_dir=plugin_package_dir)
+            PackageContext(prefix=plugin_prefix, packages_dir=plugin_package_dir)
         )
         logger.debug(f"Loading {plugin_name}")
         buffer = io.StringIO()
@@ -54,6 +56,7 @@ def load_plugins() -> List[PluginInfo]:
                     model.__tablename__ = f"{plugin_name}_{model.__tablename__}"
                 indices.append(
                     PluginInfo(
+                        prefix=plugin_prefix,
                         plugin_name=plugin_name,
                         package_name=plugin_distro.name,
                         package_version=plugin_distro.version,

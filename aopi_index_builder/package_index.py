@@ -57,9 +57,6 @@ def load_plugins() -> List[PluginInfo]:
                     logger.error("Plugin has returned wrong type.")
                     logger.debug(f"Expected: PackageIndex. Actual: {index.__class__}")
                     continue
-                for model in index.models:
-                    prefixed_name = f"{plugin_name}_{model.__table__.name}"
-                    model.__table__.fullname = prefixed_name
                 indices.append(
                     PluginInfo(
                         prefix=plugin_prefix,

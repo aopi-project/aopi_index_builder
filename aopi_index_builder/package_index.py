@@ -30,6 +30,11 @@ class PluginInfo(BaseModel):
 
 
 def load_plugins() -> List[PluginInfo]:
+    """
+    Discover and load all plugins available in
+    current environment.
+
+    """
     indices = []
     base_ctx = get_base_ctx()
     for entrypoint in entrypoints.get_group_all("aopi_index"):
@@ -53,7 +58,14 @@ def load_plugins() -> List[PluginInfo]:
                     logger.debug(f"Expected: PackageIndex. Actual: {index.__class__}")
                     continue
                 for model in index.models:
-                    model.__tablename__ = f"{plugin_name}_{model.__tablename__}"
+                    prefixed_name = f"{plugin_name}_{model.__tablename__}"
+                    model.__tablename__ = prefixed_name
+                    if model.__table__.schema is not None:
+                        model.__table__.name = (
+                            f"{model.__table__.schema}.{prefixed_name}"
+                        )
+                    else:
+                        model.__table__.fullname = prefixed_name
                 indices.append(
                     PluginInfo(
                         prefix=plugin_prefix,

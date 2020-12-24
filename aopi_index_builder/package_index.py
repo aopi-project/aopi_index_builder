@@ -8,6 +8,7 @@ from fastapi import APIRouter
 from loguru import logger
 from orm import Model
 from pydantic import BaseConfig, BaseModel
+from sqlalchemy import Table
 
 from aopi_index_builder.context import PackageContext, get_base_ctx, init_package_ctx
 
@@ -58,14 +59,10 @@ def load_plugins() -> List[PluginInfo]:
                     logger.debug(f"Expected: PackageIndex. Actual: {index.__class__}")
                     continue
                 for model in index.models:
-                    prefixed_name = f"{plugin_name}_{model.__tablename__}"
-                    model.__tablename__ = prefixed_name
-                    if model.__table__.schema is not None:
-                        model.__table__.name = (
-                            f"{model.__table__.schema}.{prefixed_name}"
-                        )
-                    else:
-                        model.__table__.fullname = prefixed_name
+                    prefixed_name = f"{plugin_name}_{model.__table__.name}"
+                    model.__table__ = Table(
+                        prefixed_name, model.__metadata__, model.__table__.columns
+                    )
                 indices.append(
                     PluginInfo(
                         prefix=plugin_prefix,

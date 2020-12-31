@@ -103,7 +103,8 @@ class AopiContext(AopiContextBase, PackageContext):
             return
         except Exception as e:
             logger.exception(e)
-        raise UserHasNoPermissions()
+        except UserHasNoPermissions:
+            raise
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True

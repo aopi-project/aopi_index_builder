@@ -100,6 +100,7 @@ class AopiContext(AopiContextBase, PackageContext):
                 user_id, role if isinstance(role, str) else role.value
             ):
                 raise UserHasNoPermissions()
+            return
         except Exception as e:
             logger.exception(e)
         raise UserHasNoPermissions()

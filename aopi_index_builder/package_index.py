@@ -1,12 +1,12 @@
 import io
 import os
 from contextlib import redirect_stdout
-from typing import List, Optional, Type
+from enum import Enum
+from typing import Any, List, Optional, Type
 
 import entrypoints
 from fastapi import APIRouter
 from loguru import logger
-from orm import Model
 from pydantic import BaseConfig, BaseModel
 
 from aopi_index_builder.context import PackageContext, get_base_ctx, init_package_ctx
@@ -14,7 +14,9 @@ from aopi_index_builder.context import PackageContext, get_base_ctx, init_packag
 
 class PackageIndex(BaseModel):
     router: APIRouter
-    models: List[Type[Model]] = []
+    target_language: str
+    db_models: List[Type[Any]] = []
+    roles: Type[Enum]
     help: Optional[str] = None
 
     class Config(BaseConfig):
@@ -24,6 +26,7 @@ class PackageIndex(BaseModel):
 class PluginInfo(BaseModel):
     prefix: str
     plugin_name: str
+    roles: List[str]
     package_name: str
     package_version: str
     package_index: PackageIndex
@@ -61,6 +64,7 @@ def load_plugins() -> List[PluginInfo]:
                     PluginInfo(
                         prefix=plugin_prefix,
                         plugin_name=plugin_name,
+                        roles=[role.value for role in index.roles],
                         package_name=plugin_distro.name,
                         package_version=plugin_distro.version,
                         package_index=index,

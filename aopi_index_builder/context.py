@@ -1,9 +1,13 @@
+from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Awaitable, Callable, Optional, Union
 
 from databases import Database
+from loguru import logger
 from pydantic import BaseConfig, BaseModel
 from sqlalchemy import MetaData
+
+from aopi_index_builder.exceptions import UserHasNoPermissions, UserWasNotFound
 
 
 class AopiContextBase(BaseModel):
@@ -16,6 +20,11 @@ class AopiContextBase(BaseModel):
     database: Database
     metadata: MetaData
     main_dir: Path
+    enable_users: bool
+    get_user_id_function: Callable[["AopiContextBase", str, str], Awaitable[int]]
+    check_user_permission: Callable[
+        ["AopiContextBase", Optional[int], Union[str, Enum]], Awaitable[bool]
+    ]
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True
@@ -36,6 +45,65 @@ class PackageContext(BaseModel):
 
 
 class AopiContext(AopiContextBase, PackageContext):
+    async def get_user_id(self, username: str, password: str) -> Optional[int]:
+        """
+        Get user id by username and password.
+
+        This function will look up user by credentials in aopi database.
+        If user system is disabled by aopi, then None would be returned.
+        If user was not found ..py:exception::`UserWasNotFound`
+        exception would be raised.
+
+        :param username: user's username
+        :param password: user's password
+        :return: id, None or exception
+        :exception: UserWasNotFound
+        """
+        if not self.enable_users:
+            return None
+        try:
+            return await self.get_user_id_function(username, password)
+        except Exception as e:
+            logger.exception(e)
+        raise UserWasNotFound()
+
+    async def has_permission(
+        self, user_id: Optional[int], role: Union[str, Enum]
+    ) -> None:
+        """
+        Check if user has permissions.
+        You can pass either enum or name of the role to check.
+
+        Usage is following:
+
+            >>> from typing import Any
+            >>> async def your_function() -> Any:
+            >>>     context = get_context()
+            >>>     uid = await context.get_user_id("username", "password")
+            >>>     await context.has_permission(uid, "role")
+            >>>     ... # do something, you're safe
+
+        The key thing is that if user has no permission or either cannot be found
+        the exception will stop your function from execution.
+
+        :param user_id: user's unique id from aopi
+        :param role: required role for action
+        :return: bool or raise an exception
+        :exception: UserHasNoPermissions
+        """
+        if not self.enable_users:
+            return
+        if user_id is None:
+            raise UserHasNoPermissions()
+        try:
+            if not await self.check_user_permission(
+                user_id, role if isinstance(role, str) else role.value
+            ):
+                raise UserHasNoPermissions()
+        except Exception as e:
+            logger.exception(e)
+        raise UserHasNoPermissions()
+
     class Config(BaseConfig):
         arbitrary_types_allowed = True
 

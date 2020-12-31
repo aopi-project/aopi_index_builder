@@ -3,14 +3,13 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.26"
+version = "0.1.28"
 name = "aopi_index_builder"
 authors = ["Pavel Kirilin <win10@list.ru>"]
 maintainers = ["Pavel Kirilin <win10@list.ru>"]
 description = "Package to build new package indices for AOPI"
 
 [tool.poetry.dependencies]
-orm = "^0.1.5"
 python = "^3.9"
 loguru = "^0.5.3"
 Jinja2 = "^2.11.2"

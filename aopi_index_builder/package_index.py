@@ -50,7 +50,7 @@ def load_plugins() -> List[PluginInfo]:
         init_package_ctx(
             PackageContext(
                 prefix=plugin_prefix,
-                plugin_name=plugin_distro.name,
+                package_name=plugin_distro.name,
                 packages_dir=plugin_package_dir,
             )
         )

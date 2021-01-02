@@ -38,7 +38,7 @@ class PackageContext(BaseModel):
     """
 
     prefix: str
-    plugin_name: str
+    package_name: str
     packages_dir: Path
 
     class Config(BaseConfig):
@@ -99,10 +99,9 @@ class AopiContext(AopiContextBase, PackageContext):
             return
         if user_id is None:
             raise UserHasNoPermissions()
-        context = get_context()
         try:
             if not await self.check_user_permission(
-                context.plugin_name,
+                self.package_name,
                 user_id,
                 role.value if isinstance(role, Enum) else role,
             ):

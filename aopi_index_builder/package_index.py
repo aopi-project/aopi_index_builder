@@ -48,7 +48,11 @@ def load_plugins() -> List[PluginInfo]:
             os.makedirs(plugin_package_dir)
         plugin_prefix = f"/{plugin_name}"
         init_package_ctx(
-            PackageContext(prefix=plugin_prefix, packages_dir=plugin_package_dir)
+            PackageContext(
+                prefix=plugin_prefix,
+                plugin_name=plugin_name,
+                packages_dir=plugin_package_dir,
+            )
         )
         logger.debug(f"Loading {plugin_name}")
         buffer = io.StringIO()

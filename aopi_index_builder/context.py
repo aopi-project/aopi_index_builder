@@ -23,7 +23,7 @@ class AopiContextBase(BaseModel):
     enable_users: bool
     get_user_id_function: Callable[["AopiContextBase", str, str], Awaitable[int]]
     check_user_permission: Callable[
-        ["AopiContextBase", Optional[int], Union[str, Enum]], Awaitable[bool]
+        ["AopiContextBase", str, Optional[int], Union[str, Enum]], Awaitable[bool]
     ]
 
     class Config(BaseConfig):
@@ -38,6 +38,7 @@ class PackageContext(BaseModel):
     """
 
     prefix: str
+    plugin_name: str
     packages_dir: Path
 
     class Config(BaseConfig):
@@ -61,11 +62,14 @@ class AopiContext(AopiContextBase, PackageContext):
         """
         if not self.enable_users:
             return None
+        user_id = None
         try:
-            return await self.get_user_id_function(username, password)
+            user_id = await self.get_user_id_function(username, password)
         except Exception as e:
             logger.exception(e)
-        raise UserWasNotFound()
+        if user_id is None:
+            raise UserWasNotFound()
+        return user_id
 
     async def has_permission(
         self, user_id: Optional[int], role: Union[str, Enum]
@@ -95,16 +99,20 @@ class AopiContext(AopiContextBase, PackageContext):
             return
         if user_id is None:
             raise UserHasNoPermissions()
+        context = get_context()
         try:
             if not await self.check_user_permission(
-                user_id, role if isinstance(role, str) else role.value
+                context.plugin_name,
+                user_id,
+                role.value if isinstance(role, Enum) else role,
             ):
                 raise UserHasNoPermissions()
             return
         except Exception as e:
             logger.exception(e)
         except UserHasNoPermissions:
-            raise
+            pass
+        raise UserHasNoPermissions()
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True

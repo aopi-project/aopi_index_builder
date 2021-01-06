@@ -3,11 +3,6 @@ from typing import Any, Dict, Optional
 from pydantic import BaseModel
 
 
-class UserModel(BaseModel):
-    id: int
-    username: str
-
-
 class PackagePreview(BaseModel):
     id: Any
     name: str

@@ -1,4 +1,5 @@
 import asyncio
+from inspect import iscoroutinefunction
 from typing import Dict, List
 
 from fastapi import FastAPI
@@ -46,7 +47,7 @@ class PluginManager:
         for plugin in self.plugins_map.values():
             func = plugin.package_index.__dict__["find_packages_func"]
             try:
-                if hasattr(func, "__await__"):
+                if iscoroutinefunction(func):
                     packages.extend(await func(package_name, plugin_limit, offset))
                 else:
                     packages.extend(

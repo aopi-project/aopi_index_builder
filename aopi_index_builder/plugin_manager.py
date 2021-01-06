@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, List
 
 from fastapi import FastAPI
@@ -5,6 +6,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from aopi_index_builder import AopiContextBase, PluginInfo, init_context, load_plugins
+from aopi_index_builder.schema import PackagePreview
 
 
 class PluginRole(BaseModel):
@@ -32,6 +34,30 @@ class PluginManager:
                 )
             )
         return roles
+
+    async def find_package(
+        self, package_name: str, limit: int, page: int
+    ) -> List[PackagePreview]:
+        plugins_count = len(self.plugins_map.values())
+        packages = list()
+        loop = asyncio.get_event_loop()
+        plugin_limit = limit // plugins_count
+        offset = plugin_limit * page
+        for plugin in self.plugins_map.values():
+            func = plugin.package_index.__dict__["find_packages_func"]
+            try:
+                if hasattr(func, "__await__"):
+                    packages.extend(await func(package_name, plugin_limit, offset))
+                else:
+                    packages.extend(
+                        await loop.run_in_executor(
+                            None, func, package_name, plugin_limit, offset
+                        )
+                    )
+            except Exception as e:
+                logger.exception(e)
+                continue
+        return packages
 
     def add_routes(self, app: FastAPI) -> None:
         for plugin in self.plugins_map.values():

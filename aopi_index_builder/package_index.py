@@ -2,7 +2,7 @@ import io
 import os
 from contextlib import redirect_stdout
 from enum import Enum
-from typing import Any, List, Optional, Type
+from typing import Any, Awaitable, Callable, List, Optional, Type, Union
 
 import entrypoints
 from fastapi import APIRouter
@@ -10,14 +10,80 @@ from loguru import logger
 from pydantic import BaseConfig, BaseModel
 
 from aopi_index_builder.context import PackageContext, get_base_ctx, init_package_ctx
+from aopi_index_builder.schema import FullPackageInfo, PackagePreview, PackageVersion
 
 
 class PackageIndex(BaseModel):
+    """
+    The main class for creating new package indices.
+    """
+
     router: APIRouter
     target_language: str
     db_models: List[Type[Any]] = []
     roles: Type[Enum]
-    help: Optional[str] = None
+    plugin_help: Optional[str] = None
+    find_packages_func: Callable[
+        [str, int], Union[Awaitable[List[PackagePreview]], List[PackagePreview]]
+    ]
+    get_package_info_func: Callable[
+        [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
+    ]
+    get_versions: Callable[
+        ["PackageIndex", str],
+        Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
+    ]
+
+    def __init__(
+        self,
+        router: APIRouter,
+        target_language: str,
+        roles: Type[Enum],
+        find_packages_func: Callable[
+            [str, int], Union[Awaitable[List[PackagePreview]], List[PackagePreview]]
+        ],
+        get_package_info_func: Callable[
+            [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
+        ],
+        get_versions: Callable[
+            ["PackageIndex", str],
+            Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
+        ],
+        db_models: Optional[List[Type[Any]]] = None,
+        plugin_help: Optional[str] = None,
+    ):
+        """
+        Package index constructor.
+        You must return instance of this class when creating new package index.
+
+        :param router: router for package index api.
+            All this routes appending to aopi routes to be used for integration with
+            package managers.
+        :param target_language: Name of target language or technology.
+        :param roles: Roles for aopi rbac system to be used in this plugin.
+        :param find_packages_func: function to find package in index.
+            This function takes 3 positional arguments:
+            * "package_name": str
+            * "limit": int
+            * "offset": int
+        :param get_package_info_func: function to get full information about package.
+            This function takes only one argument "package_id": Any.
+        :param db_models: used in this plugin.
+            This thing is made to be sure, that all models for every plugin are created.
+        :param plugin_help: This string is used as help
+            for user about how to use provided api.
+            For example:
+            "To use aopi_python install packages as the following:
+            pip install --index-url http://{aopi_url}/python/simple"
+
+        """
+        super(PackageIndex, self).__init__(
+            router=router,
+            target_language=target_language,
+            roles=roles,
+            db_models=db_models or [],
+            plugin_help=plugin_help,
+        )
 
     class Config(BaseConfig):
         arbitrary_types_allowed = True

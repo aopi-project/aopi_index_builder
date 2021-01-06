@@ -7,7 +7,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from aopi_index_builder import AopiContextBase, PluginInfo, init_context, load_plugins
-from aopi_index_builder.schema import PackagePreview
+from aopi_index_builder.schema import PluginPackagePreview
 
 
 class PluginRole(BaseModel):
@@ -38,9 +38,9 @@ class PluginManager:
 
     async def find_package(
         self, package_name: str, limit: int, page: int
-    ) -> List[PackagePreview]:
+    ) -> List[PluginPackagePreview]:
         plugins_count = len(self.plugins_map.values())
-        packages = list()
+        packages: List[PluginPackagePreview] = list()
         loop = asyncio.get_event_loop()
         plugin_limit = limit // plugins_count
         offset = plugin_limit * page
@@ -48,13 +48,21 @@ class PluginManager:
             func = plugin.package_index.__dict__["find_packages_func"]
             try:
                 if iscoroutinefunction(func):
-                    packages.extend(await func(package_name, plugin_limit, offset))
+                    plugin_packages = await func(package_name, plugin_limit, offset)
                 else:
-                    packages.extend(
-                        await loop.run_in_executor(
-                            None, func, package_name, plugin_limit, offset
-                        )
+                    plugin_packages = await loop.run_in_executor(
+                        None, func, package_name, plugin_limit, offset
                     )
+                packages.extend(
+                    map(
+                        lambda package: PluginPackagePreview(
+                            **package.dict(),
+                            plugin_name=plugin.package_name,
+                            language=plugin.package_index.target_language,
+                        ),
+                        plugin_packages,
+                    )
+                )
             except Exception as e:
                 logger.exception(e)
                 continue

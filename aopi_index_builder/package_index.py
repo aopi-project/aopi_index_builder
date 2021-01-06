@@ -29,7 +29,7 @@ class PackageIndex(BaseModel):
     get_package_info_func: Callable[
         [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
     ]
-    get_versions: Callable[
+    get_versions_func: Callable[
         ["PackageIndex", str],
         Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
     ]
@@ -45,7 +45,7 @@ class PackageIndex(BaseModel):
         get_package_info_func: Callable[
             [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
         ],
-        get_versions: Callable[
+        get_versions_func: Callable[
             ["PackageIndex", str],
             Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
         ],
@@ -68,6 +68,7 @@ class PackageIndex(BaseModel):
             * "offset": int
         :param get_package_info_func: function to get full information about package.
             This function takes only one argument "package_id": Any.
+        :param get_versions_func: function to get all versions of specific package.
         :param db_models: used in this plugin.
             This thing is made to be sure, that all models for every plugin are created.
         :param plugin_help: This string is used as help
@@ -83,6 +84,9 @@ class PackageIndex(BaseModel):
             roles=roles,
             db_models=db_models or [],
             plugin_help=plugin_help,
+            find_packages_func=find_packages_func,
+            get_package_info_func=get_package_info_func,
+            get_versions_func=get_versions_func,
         )
 
     class Config(BaseConfig):

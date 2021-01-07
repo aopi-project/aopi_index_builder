@@ -28,10 +28,10 @@ class PackageIndex(BaseModel):
         Union[Awaitable[List[PackagePreview]], List[PackagePreview]],
     ]
     get_package_info_func: Callable[
-        [Optional[int], int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
+        [Optional[int], Any], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
     ]
     get_versions_func: Callable[
-        [Optional[int], str],
+        [Optional[int], Any],
         Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
     ]
 
@@ -45,11 +45,11 @@ class PackageIndex(BaseModel):
             Union[Awaitable[List[PackagePreview]], List[PackagePreview]],
         ],
         get_package_info_func: Callable[
-            [Optional[int], int],
+            [Optional[int], Any],
             Union[Awaitable[FullPackageInfo], List[FullPackageInfo]],
         ],
         get_versions_func: Callable[
-            [Optional[int], str],
+            [Optional[int], Any],
             Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
         ],
         db_models: Optional[List[Type[Any]]] = None,

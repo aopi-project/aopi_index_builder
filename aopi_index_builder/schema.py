@@ -31,5 +31,4 @@ class PluginFullPackageInfo(PluginInfo, FullPackageInfo):
 class PackageVersion(BaseModel):
     version: str
     yanked: bool
-    downloads: str
     metadata: Dict[str, str]

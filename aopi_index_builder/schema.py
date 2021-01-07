@@ -20,7 +20,7 @@ class PluginPackagePreview(PluginInfo, PackagePreview):
 
 class FullPackageInfo(PackagePreview):
     description: Optional[str]
-    metadata: Dict[str, str]
+    metadata: Dict[str, Any]
     last_version: str
 
 
@@ -31,4 +31,4 @@ class PluginFullPackageInfo(PluginInfo, FullPackageInfo):
 class PackageVersion(BaseModel):
     version: str
     yanked: bool
-    metadata: Dict[str, str]
+    metadata: Dict[str, Any]

@@ -24,13 +24,14 @@ class PackageIndex(BaseModel):
     roles: Type[Enum]
     plugin_help: Optional[str] = None
     find_packages_func: Callable[
-        [str, int], Union[Awaitable[List[PackagePreview]], List[PackagePreview]]
+        [Optional[int], str, int],
+        Union[Awaitable[List[PackagePreview]], List[PackagePreview]],
     ]
     get_package_info_func: Callable[
-        [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
+        [Optional[int], int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
     ]
     get_versions_func: Callable[
-        ["PackageIndex", str],
+        [Optional[int], str],
         Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
     ]
 
@@ -40,13 +41,15 @@ class PackageIndex(BaseModel):
         target_language: str,
         roles: Type[Enum],
         find_packages_func: Callable[
-            [str, int], Union[Awaitable[List[PackagePreview]], List[PackagePreview]]
+            [Optional[int], str, int],
+            Union[Awaitable[List[PackagePreview]], List[PackagePreview]],
         ],
         get_package_info_func: Callable[
-            [int], Union[Awaitable[FullPackageInfo], List[FullPackageInfo]]
+            [Optional[int], int],
+            Union[Awaitable[FullPackageInfo], List[FullPackageInfo]],
         ],
         get_versions_func: Callable[
-            ["PackageIndex", str],
+            [Optional[int], str],
             Union[Awaitable[List[PackageVersion]], List[PackageVersion]],
         ],
         db_models: Optional[List[Type[Any]]] = None,
@@ -62,13 +65,19 @@ class PackageIndex(BaseModel):
         :param target_language: Name of target language or technology.
         :param roles: Roles for aopi rbac system to be used in this plugin.
         :param find_packages_func: function to find package in index.
-            This function takes 3 positional arguments:
-            * "package_name": str
-            * "limit": int
-            * "offset": int
+            This function takes 4 positional arguments:
+                * "current_user_id": Optional[int]
+                * "package_name": str
+                * "limit": int
+                * "offset": int
         :param get_package_info_func: function to get full information about package.
-            This function takes only one argument "package_id": Any.
+            This function takes two arguments:
+                * "current_user_id": Optional[int]
+                * "package_id": Any.
         :param get_versions_func: function to get all versions of specific package.
+            it takes two positional arguments:
+                * "current_user_id": Optional[int]
+                * "package_id": Any.
         :param db_models: used in this plugin.
             This thing is made to be sure, that all models for every plugin are created.
         :param plugin_help: This string is used as help

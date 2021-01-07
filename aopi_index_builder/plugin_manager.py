@@ -1,6 +1,6 @@
 import asyncio
 from inspect import iscoroutinefunction
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from fastapi import FastAPI
 from loguru import logger
@@ -37,7 +37,7 @@ class PluginManager:
         return roles
 
     async def find_package(
-        self, package_name: str, limit: int, page: int
+        self, user_id: Optional[int], package_name: str, limit: int, page: int
     ) -> List[PluginPackagePreview]:
         plugins_count = len(self.plugins_map.values())
         packages: List[PluginPackagePreview] = list()
@@ -48,10 +48,12 @@ class PluginManager:
             func = plugin.package_index.__dict__["find_packages_func"]
             try:
                 if iscoroutinefunction(func):
-                    plugin_packages = await func(package_name, plugin_limit, offset)
+                    plugin_packages = await func(
+                        user_id, package_name, plugin_limit, offset
+                    )
                 else:
                     plugin_packages = await loop.run_in_executor(
-                        None, func, package_name, plugin_limit, offset
+                        None, func, user_id, package_name, plugin_limit, offset
                     )
                 packages.extend(
                     map(

@@ -12,6 +12,7 @@ from aopi_index_builder.schema import (
     PackageVersion,
     PluginFullPackageInfo,
     PluginPackagePreview,
+    ReadmeFormats,
 )
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "PluginInfo",
     "load_plugins",
     "PluginManager",
+    "ReadmeFormats",
     "PackagePreview",
     "FullPackageInfo",
     "PackageVersion",

@@ -1,6 +1,7 @@
+from enum import Enum
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class PluginInfo(BaseModel):
@@ -18,8 +19,15 @@ class PluginPackagePreview(PluginInfo, PackagePreview):
     ...
 
 
+class ReadmeFormats(Enum, str):
+    MD = "md"
+    RST = "rst"
+    TEXT = "text"
+
+
 class FullPackageInfo(PackagePreview):
     description: Optional[str]
+    description_format: ReadmeFormats = Field(ReadmeFormats.TEXT)
     metadata: Dict[str, Any]
     last_version: str
 

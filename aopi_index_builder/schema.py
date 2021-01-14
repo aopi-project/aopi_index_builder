@@ -19,7 +19,7 @@ class PluginPackagePreview(PluginInfo, PackagePreview):
     ...
 
 
-class ReadmeFormats(Enum, str):
+class ReadmeFormats(str, Enum):
     MD = "md"
     RST = "rst"
     TEXT = "text"
